@@ -33,6 +33,128 @@
         .user-list-item:last-child {
             border-bottom: none;
         }
+
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e293b;
+            --accent: #f1f5f9;
+            --text: #0f172a;
+          }
+        .faq-section {
+    max-width: 900px;
+    margin: 80px auto;
+    padding: 40px 25px;
+    background: var(--accent);
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    font-family: "Inter", "Segoe UI", sans-serif;
+    color: var(--text);
+  }
+
+  .faq-section h2 {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 25px;
+    text-align: center;
+    font-weight: 700;
+  }
+
+  .faq-item {
+    background: white;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 18px;
+    border-left: 4px solid var(--primary);
+    transition: all 0.3s ease;
+  }
+
+  .faq-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.1);
+  }
+
+  .faq-item h3 {
+    color: var(--secondary);
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .faq-item p {
+    line-height: 1.6;
+    font-size: 0.95rem;
+    color: #334155;
+  }
+
+  .faq-section ol {
+    counter-reset: step;
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  .faq-section ol li {
+    position: relative;
+    margin: 18px 0;
+    padding-left: 45px;
+    background: white;
+    border-radius: 12px;
+    padding: 18px 25px 18px 55px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  }
+
+  .faq-section ol li::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.25);
+  }
+
+  .faq-section ul {
+    margin-top: 10px;
+    padding-left: 25px;
+  }
+
+  .faq-section ul li {
+    list-style: disc;
+    color: #475569;
+    font-size: 0.95rem;
+  }
+
+  .faq-section p {
+    margin-bottom: 15px;
+  }
+
+  @media (max-width: 600px) {
+    .faq-section {
+      padding: 30px 18px;
+    }
+
+    .faq-item {
+      padding: 16px;
+    }
+
+    .faq-section h2 {
+      font-size: 1.6rem;
+    }
+
+    .faq-section ol li {
+      padding: 16px 18px 16px 50px;
+    }
+  }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
