@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <title>Compare Followers vs Following lists tool - See Who Doesn't Follow You Back on Instagram</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Use Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Add a subtle animation for the results appearing */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        /* Style for the individual list items */
+        .user-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px; /* Slightly less padding */
+            border-bottom: 1px solid #e5e7eb; /* gray-200 */
+        }
+        .user-list-item:nth-child(even) {
+            background-color: #f3f3f3;
+        }
+        .user-list-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-5xl mx-auto">
+        
+        <!-- Header -->
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">
+            Who Doesn't Follow Me Back on Instagram
+        </h1>
+        <p class="text-gray-600 text-center mb-8">
+            Find out who doesn't follow you back on Instagram. Just paste your lists below.
+        </p>
+
+        <!-- Input Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            
+            <!-- Followers List -->
+            <div>
+                <label for="followersInput" class="block text-lg font-semibold text-gray-700 mb-2">
+                    Followers List
+                    <span id="followersCount" class="text-sm font-normal text-gray-500 ml-2"></span>
+                </label>
+                <textarea 
+                    id="followersInput"
+                    class="w-full h-80 p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm resize-y"
+                    placeholder="Paste your 'followers' list here. The app will find the usernames."
+                ></textarea>
+                <!-- File Upload for Followers -->
+                <label class="block w-full mt-3 text-sm font-medium text-gray-700">
+                    Or upload CSV:
+                    <input 
+                        type="file" 
+                        id="followersFile" 
+                        accept=".csv, text/csv"
+                        class="mt-1 block w-full text-sm text-gray-500
+                               file:mr-4 file:py-2 file:px-4
+                               file:rounded-lg file:border-0
+                               file:text-sm file:font-semibold
+                               file:bg-blue-50 file:text-blue-700
+                               hover:file:bg-blue-100 transition-colors"
+                    />
+                </label>
+            </div>
+            
+            <!-- Following List -->
+            <div>
+                <label for="followingInput" class="block text-lg font-semibold text-gray-700 mb-2">
+                    Following List
+                    <span id="followingCount" class="text-sm font-normal text-gray-500 ml-2"></span>
+                </label>
+                <textarea 
+                    id="followingInput"
+                    class="w-full h-80 p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm resize-y"
+                    placeholder="Paste your 'following' list here. The app will find the usernames."
+                ></textarea>
+                <!-- File Upload for Following -->
+                <label class="block w-full mt-3 text-sm font-medium text-gray-700">
+                    Or upload CSV:
+                    <input 
+                        type="file" 
+                        id="followingFile" 
+                        accept=".csv, text/csv"
+                        class="mt-1 block w-full text-sm text-gray-500
+                               file:mr-4 file:py-2 file:px-4
+                               file:rounded-lg file:border-0
+                               file:text-sm file:font-semibold
+                               file:bg-indigo-50 file:text-indigo-700
+                               hover:file:bg-indigo-100 transition-colors"
+                    />
+                </label>
+            </div>
+        </div>
+
+        <!-- Compare Button -->
+        <div class="text-center mb-8">
+            <button 
+                id="compareButton"
+                class="w-full md:w-auto bg-blue-600 text-white font-bold py-3 px-12 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Compare Lists
+            </button>
+        </div>
+
+        <!-- Results Section (Initially Hidden) -->
+        <div id="resultsSection" class="hidden">
+            <!-- Result Header -->
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-3 pb-3 border-b border-gray-200">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-2 sm:mb-0">
+                    Not Following You Back
+                </h2>
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <span class="text-lg font-bold text-red-600">
+                        Total: <span id="resultCount" class="ml-1">0</span>
+                    </span>
+                    <!-- NEW: Visit Selected Button -->
+                    <button 
+                        id="visitSelectedButton"
+                        class="hidden bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-blue-600 transition-all duration-200 text-sm">
+                        Visit Selected
+                    </button>
+                    <!-- NEW: Copy Selected Button -->
+                    <button 
+                        id="copySelectedButton"
+                        class="hidden bg-yellow-500 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-yellow-600 transition-all duration-200 text-sm">
+                        Copy Selected (0)
+                    </button>
+                    <!-- NEW: Clear Selection Button -->
+                    <button 
+                        id="clearSelectedButton"
+                        class="hidden bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-gray-500 transition-all duration-200 text-sm">
+                        Clear
+                    </button>
+                    <button 
+                        id="copyButton"
+                        class="bg-green-600 text-white font-semibold py-2 px-5 rounded-lg shadow-sm hover:bg-green-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        Copy List
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Bar for Not Following Back -->
+            <div class="my-3">
+                <label for="searchNotFollowing" class="block text-sm font-medium text-gray-700 mb-1">Search List:</label>
+                <input 
+                    type="text" 
+                    id="searchNotFollowing" 
+                    placeholder="Start typing a username..." 
+                    class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                >
+            </div>
+
+            <!-- Result Output (DIV instead of Textarea) -->
+            <div 
+                id="resultsOutputList"
+                class="w-full h-80 p-2 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto"
+                aria-live="polite"
+            >
+                <!-- User items will be dynamically inserted here -->
+            </div>
+
+            <!-- Show More Button -->
+            <div class="text-center mt-4" id="showMoreContainer">
+                <button id="showMoreButton" class="text-sm text-blue-600 hover:underline focus:outline-none">
+                    Show More Details...
+                </button>
+            </div>
+
+            <!-- More Details Section (Initially Hidden) -->
+            <div id="moreDetailsSection" class="hidden mt-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <!-- Fans (Only in Followers) -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-lg font-semibold text-gray-700">
+                                Fans <span class="text-sm font-normal text-gray-500">(Not Following Back)</span>
+                            </h3>
+                            <span class="text-sm font-bold text-blue-600">
+                                Total: <span id="fansCount">0</span>
+                            </span>
+                        </div>
+                        
+                        <!-- Search Bar for Fans -->
+                        <div class="my-3">
+                            <label for="searchFans" class="block text-sm font-medium text-gray-700 mb-1">Search List:</label>
+                            <input 
+                                type="text" 
+                                id="searchFans" 
+                                placeholder="Start typing a username..." 
+                                class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                        </div>
+                        
+                        <!-- Fans Output (DIV instead of Textarea) -->
+                        <div 
+                            id="fansOutputList"
+                            class="w-full h-60 p-2 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto"
+                            aria-live="polite"
+                        >
+                            <!-- User items will be dynamically inserted here -->
+                        </div>
+                        <!-- NEW: Container for copy buttons -->
+                        <div class="mt-2 flex space-x-2">
+                            <button 
+                                id="visitSelectedFansButton"
+                                class="hidden w-auto bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-blue-600 transition-all duration-200 text-sm">
+                                Visit
+                            </button>
+                            <button 
+                                id="copySelectedFansButton"
+                                class="hidden w-auto bg-yellow-500 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-yellow-600 transition-all duration-200 text-sm">
+                                Copy (0)
+                            </button>
+                            <button 
+                                id="clearSelectedFansButton"
+                                class="hidden w-auto bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-gray-500 transition-all duration-200 text-sm">
+                                Clear
+                            </button>
+                            <button 
+                                id="copyFansButton"
+                                class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-green-700 transition-all duration-200 text-sm">
+                                Copy Fans List
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Mutuals (In Both Lists) -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-lg font-semibold text-gray-700">
+                                Mutuals <span class="text-sm font-normal text-gray-500">(Following Each Other)</span>
+                            </h3>
+                            <span class="text-sm font-bold text-green-600">
+                                Total: <span id="mutualsCount">0</span>
+                            </span>
+                        </div>
+
+                        <!-- Search Bar for Mutuals -->
+                        <div class="my-3">
+                            <label for="searchMutuals" class="block text-sm font-medium text-gray-700 mb-1">Search List:</label>
+                            <input 
+                                type="text" 
+                                id="searchMutuals" 
+                                placeholder="Start typing a username..." 
+                                class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            >
+                        </div>
+
+                        <!-- Mutuals Output (DIV instead of Textarea) -->
+                        <div 
+                            id="mutualsOutputList"
+                            class="w-full h-60 p-2 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto"
+                            aria-live="polite"
+                        >
+                            <!-- User items will be dynamically inserted here -->
+                        </div>
+                        <!-- NEW: Container for copy buttons -->
+                        <div class="mt-2 flex space-x-2">
+                            <button 
+                                id="visitSelectedMutualsButton"
+                                class="hidden w-auto bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-blue-600 transition-all duration-200 text-sm">
+                                Visit
+                            </button>
+                            <button 
+                                id="copySelectedMutualsButton"
+                                class="hidden w-auto bg-yellow-500 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-yellow-600 transition-all duration-200 text-sm">
+                                Copy (0)
+                            </button>
+                            <button 
+                                id="clearSelectedMutualsButton"
+                                class="hidden w-auto bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-gray-500 transition-all duration-200 text-sm">
+                                Clear
+                            </button>
+                            <button 
+                                id="copyMutualsButton"
+                                class="w-full bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-sm hover:bg-green-700 transition-all duration-200 text-sm">
+                                Copy Mutuals List
+                            </button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <section id="faq-howto" class="faq-section" style="margin-top:60px;">
+          <h2>FAQ – Followers vs Following Comparison Tool</h2>
+        
+          <div class="faq-item">
+            <h3>What is this tool?</h3>
+            <p>This online tool helps you compare your <strong>followers list</strong> and <strong>following list</strong> to instantly find out <strong>who doesn’t follow you back on Instagram</strong> (or any platform where you can export lists). No login required, and your data remains private.</p>
+          </div>
+        
+          <div class="faq-item">
+            <h3>How do I use it?</h3>
+            <p>Paste your followers list in the first box and your following list in the second box (or upload CSV files). Then click “Compare Lists” and the tool will show you: (1) users you follow who don’t follow you back, (2) users who follow you but you don’t follow them back, and (3) mutuals.</p>
+          </div>
+        
+          <div class="faq-item">
+            <h3>Is it free?</h3>
+            <p>Yes—this version of the <strong>free Instagram unfollowers checker</strong> allows you to perform the basic list comparison. Additional features or larger list sizes may be part of a premium version.</p>
+          </div>
+        
+          <div class="faq-item">
+            <h3>Do I need to log in with my Instagram or share credentials?</h3>
+            <p>No. The entire comparison runs locally in your browser — you never need to enter your Instagram credentials or allow access to your account, making this a safe and private <strong>unfollowers tool</strong>.</p>
+          </div>
+        
+          <div class="faq-item">
+            <h3>Can I use this tool for platforms other than Instagram?</h3>
+            <p>Yes. As long as you can export or copy your followers/following lists (for example from Twitter/X, TikTok, Threads, or any social platform), you can paste them and use the tool to find non-followers, fans, and mutuals.</p>
+          </div>
+        
+          <div class="faq-item">
+            <h3>What happens to my data?</h3>
+            <p>Your lists are processed locally in your browser—nothing is uploaded to any server. This ensures a high level of privacy and security for your <strong>followers vs following list comparison</strong>.</p>
+          </div>
+        
+          <div class="faq-item">
+            <h3>How accurate is the comparison?</h3>
+            <p>The comparison only depends on the correctness of the lists you paste/upload. Provided the data is accurate, the tool will correctly identify who isn’t following back, who you aren’t following, and mutuals. For best results, make sure the lists contain usernames in the expected format.</p>
+          </div>
+        
+          <div class="faq-item">
+            <h3>How can I download or save the results?</h3>
+            <p>After running the comparison, you can copy the generated list to your clipboard or download as a CSV (if you’re using or upgrade to a version that supports export). Then you can save or manipulate the results offline.</p>
+          </div>
+        
+          <hr style="margin:40px 0;">
+        
+          <h2>How to Use the “Compare Followers vs Following” Tool</h2>
+        
+          <ol>
+            <li><strong>Step 1:</strong> Export or copy your <strong>followers list</strong> and your <strong>following list</strong> from your selected social media platform.</li>
+            <li><strong>Step 2:</strong> Paste the followers list into the first textarea (or upload its CSV) and paste the following list into the second textarea (or upload its CSV).</li>
+            <li><strong>Step 3:</strong> Click the <strong>“Compare Lists”</strong> button to run the comparison.</li>
+            <li><strong>Step 4:</strong> View your results. You will see:
+              <ul>
+                <li>Users you follow who don’t follow you back.</li>
+                <li>Users who follow you but you don’t follow them back.</li>
+                <li>Mutual followers (you follow each other).</li>
+              </ul>
+            </li>
+            <li><strong>Step 5:</strong> You can filter or search through the results, select specific usernames to copy or open their profiles, and export the list if needed.</li>
+            <li><strong>Step 6:</strong> Copy the list or download it as CSV (if supported). Then you can act on it: unfollow, follow back, clean up your list, etc.</li>
+          </ol>
+        
+          <p style="margin-top:20px;">
+            Use this fully browser-based <strong>Instagram followers comparison tool</strong> to efficiently analyse your social network, identify inactive accounts, manage your followers and following, and keep your account clean—all while preserving your privacy.
+          </p>
+        </section>
+
+    </div>
+
+    <!-- NEW: Confirmation Modal -->
+    <div id="confirmModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50 fade-in">
+        <div class="bg-white rounded-2xl p-8 shadow-xl max-w-sm w-full">
+            <h3 id="modalTitle" class="text-xl font-bold mb-4">Are you sure?</h3>
+            <p id="modalMessage" class="mb-6 text-gray-700">You are about to open 0 new tabs. Your browser might block some of them, so make sure pop-up and redirects are allowed.</p>
+            <div class="flex justify-end space-x-3">
+                <button id="modalCancel" class="bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
+                <button id="modalConfirm" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Store full lists for filtering ---
+            let fullNotFollowingList = [];
+            let fullFansList = [];
+            let fullMutualsList = [];
+            
+            // --- NEW: Store for selected items ---
+            let selectedNotFollowing = new Set();
+            let selectedFans = new Set();
+            let selectedMutuals = new Set();
+
+
+            // --- Get DOM Elements ---
+            const followersInput = document.getElementById('followersInput');
+            const followingInput = document.getElementById('followingInput');
+            const followersFileInput = document.getElementById('followersFile');
+            const followingFileInput = document.getElementById('followingFile');
+            const compareButton = document.getElementById('compareButton');
+            const resultsSection = document.getElementById('resultsSection');
+            const resultCount = document.getElementById('resultCount');
+            const followersCount = document.getElementById('followersCount');
+            const followingCount = document.getElementById('followingCount');
+            const copyButton = document.getElementById('copyButton');
+
+            // Elements for more details
+            const showMoreContainer = document.getElementById('showMoreContainer');
+            const showMoreButton = document.getElementById('showMoreButton');
+            const moreDetailsSection = document.getElementById('moreDetailsSection');
+            const fansCount = document.getElementById('fansCount');
+            const copyFansButton = document.getElementById('copyFansButton');
+            const mutualsCount = document.getElementById('mutualsCount');
+            const copyMutualsButton = document.getElementById('copyMutualsButton');
+            
+            // Search bar elements
+            const searchNotFollowing = document.getElementById('searchNotFollowing');
+            const searchFans = document.getElementById('searchFans');
+            const searchMutuals = document.getElementById('searchMutuals');
+
+            // List container elements (replaced textareas)
+            const resultsOutputList = document.getElementById('resultsOutputList');
+            const fansOutputList = document.getElementById('fansOutputList');
+            const mutualsOutputList = document.getElementById('mutualsOutputList');
+            
+            // "Copy Selected" buttons
+            const copySelectedButton = document.getElementById('copySelectedButton');
+            const copySelectedFansButton = document.getElementById('copySelectedFansButton');
+            const copySelectedMutualsButton = document.getElementById('copySelectedMutualsButton');
+
+            // NEW: "Visit Selected" buttons
+            const visitSelectedButton = document.getElementById('visitSelectedButton');
+            const visitSelectedFansButton = document.getElementById('visitSelectedFansButton');
+            const visitSelectedMutualsButton = document.getElementById('visitSelectedMutualsButton');
+            
+            // NEW: "Clear Selection" buttons
+            const clearSelectedButton = document.getElementById('clearSelectedButton');
+            const clearSelectedFansButton = document.getElementById('clearSelectedFansButton');
+            const clearSelectedMutualsButton = document.getElementById('clearSelectedMutualsButton');
+            
+            // NEW: Modal elements
+            const confirmModal = document.getElementById('confirmModal');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalCancel = document.getElementById('modalCancel');
+            const modalConfirm = document.getElementById('modalConfirm');
+            let modalConfirmCallback = null;
+
+            
+            // --- Config for lazy-loading lists ---
+            const BATCH_SIZE = 50; // Load 50 items at a time
+            const SCROLL_THRESHOLD = 200; // Load when 200px from bottom
+
+            /**
+             * Parses the raw text input from the textarea into a Set of usernames.
+             */
+            function parseInput(text) {
+                // ... (existing code, no changes) ...
+                const lines = text.split('\n');
+                const usernames = new Set();
+                const usernameRegex = /^[a-z0-9._]{3,30}$/;
+                for (const line of lines) {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine) continue;
+                    if (usernameRegex.test(trimmedLine)) {
+                        usernames.add(trimmedLine);
+                    }
+                }
+                return usernames;
+            }
+
+            /**
+             * Reads a CSV file, finds the username column,
+             * and populates the target textarea.
+             */
+            function handleFileSelect(event, targetTextarea) {
+                // ... (existing code, no changes) ...
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const text = e.target.result;
+                    const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+                    if (lines.length === 0) {
+                        targetTextarea.value = '';
+                        return;
+                    }
+                    const usernames = [];
+                    let colIndex = -1;
+                    let startLine = 0; 
+                    const headerLine = lines[0].toLowerCase();
+                    const headers = headerLine.split(',').map(h => h.trim().replace(/"/g, ''));
+                    colIndex = headers.indexOf('username');
+                    if (colIndex === -1) {
+                        colIndex = headers.indexOf('usernames');
+                    }
+                    if (colIndex > -1) {
+                        startLine = 1;
+                    } else {
+                        colIndex = 0;
+                        startLine = 0; 
+                    }
+                    for (let i = startLine; i < lines.length; i++) {
+                        const values = lines[i].split(',');
+                        if (values[colIndex]) {
+                            const username = values[colIndex].trim().replace(/"/g, '');
+                            if (username) {
+                                usernames.push(username);
+                            }
+                        }
+                    }
+                    targetTextarea.value = usernames.join('\n');
+                };
+                reader.readAsText(file);
+            }
+
+            /**
+             * Main function to compare the two lists.
+             */
+            function compareLists() {
+                // 1. Get text and parse into Sets
+                const followersText = followersInput.value;
+                const followingText = followingInput.value;
+                const followers = parseInput(followersText);
+                const following = parseInput(followingText);
+
+                // 2. Update counts in the UI
+                followersCount.innerText = `(${followers.size} found)`;
+                followingCount.innerText = `(${following.size} found)`;
+
+                // 3. Find 'notFollowingBack'
+                const notFollowingBack = [];
+                for (const user of following) {
+                    if (!followers.has(user)) {
+                        notFollowingBack.push(user);
+                    }
+                }
+                
+                // 4. Find 'Fans'
+                const fans = [];
+                for (const user of followers) {
+                    if (!following.has(user)) {
+                        fans.push(user);
+                    }
+                }
+
+                // 5. Find 'Mutuals'
+                const mutuals = [];
+                for (const user of followers) {
+                    if (following.has(user)) {
+                        mutuals.push(user);
+                    }
+                }
+
+                // 6. Sort all results alphabetically
+                notFollowingBack.sort();
+                fans.sort();
+                mutuals.sort();
+                
+                // 7. Store full lists for filtering
+                fullNotFollowingList = [...notFollowingBack];
+                fullFansList = [...fans];
+                fullMutualsList = [...mutuals];
+
+                // 8. Display primary results count
+                resultCount.innerText = fullNotFollowingList.length;
+                
+                // 9. Display "More Details" results counts
+                fansCount.innerText = fullFansList.length;
+                mutualsCount.innerText = fullMutualsList.length;
+                
+                // 10. Render lists dynamically
+                //    (Pass the selection sets to preserve state)
+                renderList(fullNotFollowingList, resultsOutputList, selectedNotFollowing);
+                renderList(fullFansList, fansOutputList, selectedFans);
+                renderList(fullMutualsList, mutualsOutputList, selectedMutuals);
+
+
+                // 11. Show the main results section and "Show More" button
+                resultsSection.classList.remove('hidden');
+                resultsSection.classList.add('fade-in');
+                showMoreContainer.classList.remove('hidden');
+                showMoreButton.classList.remove('hidden');
+
+                // 12. Hide the "More Details" section until clicked
+                moreDetailsSection.classList.add('hidden');
+                
+                // 13. Clear any previous search filters
+                searchNotFollowing.value = '';
+                searchFans.value = '';
+                searchMutuals.value = '';
+                
+                // 14. NEW: Reset selections and hide "Copy Selected" buttons
+                selectedNotFollowing.clear();
+                selectedFans.clear();
+                selectedMutuals.clear();
+                updateSelectionButtons(
+                    copySelectedButton, visitSelectedButton, clearSelectedButton, 0, copyButton
+                );
+                updateSelectionButtons(
+                    copySelectedFansButton, visitSelectedFansButton, clearSelectedFansButton, 0, copyFansButton
+                );
+                updateSelectionButtons(
+                    copySelectedMutualsButton, visitSelectedMutualsButton, clearSelectedMutualsButton, 0, copyMutualsButton
+                );
+            }
+
+            /**
+             * Renders a list of users into a container with lazy-loading.
+             * @param {string[]} list - The array of usernames to render.
+             * @param {HTMLElement} container - The container <div> to render into.
+             * @param {Set<string>} selectionSet - The Set holding selected usernames.
+             */
+            function renderList(list, container, selectionSet) {
+                let currentIndex = 0;
+                let scrollListener = null; 
+
+                // Clear existing content and remove old listener
+                container.innerHTML = '';
+                if (container.scrollListener) {
+                    container.removeEventListener('scroll', container.scrollListener);
+                }
+
+                const loadMoreItems = () => {
+                    const fragment = document.createDocumentFragment();
+                    const endIndex = Math.min(currentIndex + BATCH_SIZE, list.length);
+
+                    for (let i = currentIndex; i < endIndex; i++) {
+                        const username = list[i];
+                        // NEW: Check if this item is in the selection set
+                        const isChecked = selectionSet.has(username);
+
+                        const item = document.createElement('div');
+                        item.className = 'user-list-item'; // Use CSS class
+                        item.innerHTML = `
+                            <div class="flex-grow flex items-center overflow-hidden">
+                                <input 
+                                    type="checkbox" 
+                                    class="mr-3 flex-shrink-0" 
+                                    data-username="${username}"
+                                    ${isChecked ? 'checked' : ''}
+                                >
+                                <span class"font-mono text-sm text-gray-800 truncate" title="${username}">${username}</span>
+                            </div>
+                            <a href="https://instagram.com/${username}" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-600 hover:underline hover:text-blue-800 transition-colors ml-2 flex-shrink-0">
+                                Visit
+                            </a>
+                        `;
+                        fragment.appendChild(item);
+                    }
+
+                    container.appendChild(fragment);
+                    currentIndex += BATCH_SIZE;
+
+                    // If we've rendered all items, remove the scroll listener
+                    if (currentIndex >= list.length && scrollListener) {
+                        container.removeEventListener('scroll', scrollListener);
+                    }
+                };
+
+                // Define the scroll listener
+                scrollListener = () => {
+                    // Load more if we are near the bottom
+                    if (container.scrollTop + container.clientHeight >= container.scrollHeight - SCROLL_THRESHOLD) {
+                        loadMoreItems();
+                    }
+                };
+                
+                // Attach the new listener
+                container.addEventListener('scroll', scrollListener);
+                container.scrollListener = scrollListener; 
+
+                // Load the first batch
+                loadMoreItems();
+            }
+            
+            /**
+             * NEW: Shows/hides the "Copy Selected" button and updates its count.
+             * Also adjusts the width of the main copy button to fill the space.
+             * @param {HTMLElement} button - The "Copy Selected" button.
+             * @param {number} count - The number of selected items.
+             * @param {HTMLElement} mainCopyButton - The corresponding "Copy List" button.
+             */
+            function updateSelectionButtons(copySelectedBtn, visitSelectedBtn, clearSelectedBtn, count, mainCopyBtn) {
+                const isMainList = mainCopyBtn.id === 'copyButton';
+
+                if (count > 0) {
+                    copySelectedBtn.classList.remove('hidden');
+                    visitSelectedBtn.classList.remove('hidden');
+                    clearSelectedBtn.classList.remove('hidden');
+                    
+                    // Update text, use short text for smaller buttons
+                    if (isMainList) {
+                        copySelectedBtn.innerText = `Copy Selected (${count})`;
+                    } else {
+                        copySelectedBtn.innerText = `Copy (${count})`;
+                    }
+
+                    // Make main button take up remaining space
+                    if (!isMainList) { // Only for fans/mutuals
+                        mainCopyBtn.classList.remove('w-full');
+                        mainCopyBtn.classList.add('flex-grow'); // Use flex-grow
+                    }
+                } else {
+                    copySelectedBtn.classList.add('hidden');
+                    visitSelectedBtn.classList.add('hidden');
+                    clearSelectedBtn.classList.add('hidden');
+                    
+                    // Make main button full-width again
+                    if (!isMainList) { // Only for fans/mutuals
+                        mainCopyBtn.classList.remove('flex-grow');
+                        mainCopyBtn.classList.add('w-full');
+                    }
+                }
+            }
+
+            /**
+             * NEW: Handles clicks on the list containers for event delegation.
+             * @param {Event} event - The click event.
+             * @param {Set<string>} selectionSet - The Set to update.
+             * @param {HTMLElement} button - The "Copy Selected" button to update.
+             * @param {HTMLElement} mainCopyButton - The main "Copy List" button.
+             */
+            function handleCheckboxClick(event, selectionSet, copySelectedBtn, visitSelectedBtn, clearSelectedBtn, mainCopyBtn) {
+                const target = event.target;
+                if (target.tagName === 'INPUT' && target.type === 'checkbox') {
+                    const username = target.dataset.username;
+                    if (!username) return;
+
+                    if (target.checked) {
+                        selectionSet.add(username);
+                    } else {
+                        selectionSet.delete(username);
+                    }
+                    
+                    updateSelectionButtons(copySelectedBtn, visitSelectedBtn, clearSelectedBtn, selectionSet.size, mainCopyBtn);
+                }
+            }
+
+
+            /**
+             * Copies a list of usernames to the clipboard by creating a
+             * temporary textarea.
+             */
+            function copyListToClipboard(list, buttonElement, originalText = 'Copy List') {
+                // ... (existing code, no changes) ...
+                if (list.length === 0) return;
+                const tempTextarea = document.createElement('textarea');
+                tempTextarea.value = list.join('\n');
+                tempTextarea.style.position = 'absolute';
+                tempTextarea.style.left = '-9999px';
+                document.body.appendChild(tempTextarea);
+                tempTextarea.select();
+                try {
+                    document.execCommand('copy');
+                    buttonElement.innerText = 'Copied!';
+                    buttonElement.classList.remove('bg-green-600', 'hover:bg-green-700', 'bg-yellow-500', 'hover:bg-yellow-600');
+                    buttonElement.classList.add('bg-gray-500', 'cursor-default');
+                    buttonElement.disabled = true;
+                    
+                    setTimeout(() => {
+                        buttonElement.innerText = originalText;
+                        buttonElement.classList.remove('bg-gray-500', 'cursor-default');
+                        // Restore original color
+                        if (originalText.startsWith('Copy Selected') || originalText.startsWith('Copy (')) {
+                            buttonElement.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+                        } else {
+                            buttonElement.classList.add('bg-green-600', 'hover:bg-green-700');
+                        }
+                        buttonElement.disabled = false;
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                    buttonElement.innerText = 'Error!';
+                } finally {
+                    document.body.removeChild(tempTextarea);
+                }
+            }
+
+            // --- UPDATED: Copy button functions ---
+            function copyResults() {
+                copyListToClipboard(fullNotFollowingList, copyButton);
+            }
+
+            function copyFans() {
+                copyListToClipboard(fullFansList, copyFansButton, 'Copy Fans List');
+            }
+
+            function copyMutuals() {
+                copyListToClipboard(fullMutualsList, copyMutualsButton, 'Copy Mutuals List');
+            }
+
+            /**
+             * UPDATED: Filters a list and re-renders the container.
+             * @param {string} searchTerm - The text to search for.
+             * @param {string[]} fullList - The complete array of usernames.
+             * @param {HTMLElement} outputContainer - The textarea to update.
+             * @param {Set<string>} selectionSet - The Set holding selected items.
+             */
+            function filterAndDisplay(searchTerm, fullList, outputContainer, selectionSet) {
+                const lowerSearchTerm = searchTerm.toLowerCase().trim();
+                let filteredList = fullList;
+                
+                if (lowerSearchTerm) {
+                    filteredList = fullList.filter(user => 
+                        user.toLowerCase().includes(lowerSearchTerm)
+                    );
+                }
+                
+                // Re-render the list with the (potentially) filtered data
+                // and pass the selectionSet to preserve checkbox state
+                renderList(filteredList, outputContainer, selectionSet);
+            }
+
+            // --- NEW: Modal Functions ---
+            /**
+             * Shows the confirmation modal.
+             * @param {string} message - The message to display.
+             * @param {function} onConfirm - The callback to run if confirmed.
+             */
+            function showModal(message, onConfirm) {
+                modalMessage.innerText = message;
+                modalConfirmCallback = onConfirm;
+                confirmModal.classList.remove('hidden');
+            }
+
+            /**
+             * Hides the confirmation modal.
+             */
+            function hideModal() {
+                confirmModal.classList.add('hidden');
+                modalConfirmCallback = null;
+            }
+
+            // --- NEW: Function to open multiple tabs ---
+            /**
+             * Opens all selected profiles in new tabs.
+             * @param {Set<string>} selectionSet - The set of usernames.
+             */
+            function visitSelected(selectionSet) {
+                const count = selectionSet.size;
+                if (count === 0) return;
+
+                const message = `You are about to open ${count} new tab${count > 1 ? 's' : ''}. Your browser might block some of them. Continue?`;
+                
+                showModal(message, () => {
+                    selectionSet.forEach(username => {
+                        window.open(`https://instagram.com/${username}`, '_blank', 'noopener,noreferrer');
+                    });
+                });
+            }
+
+            // --- NEW: Function to clear selections ---
+            /**
+             * Clears all selections for a list.
+             * @param {Set<string>} selectionSet
+             * @param {string[]} fullList
+             * @param {HTMLElement} outputContainer
+             * @param {HTMLElement} copySelectedBtn
+             * @param {HTMLElement} visitSelectedBtn
+             * @param {HTMLElement} clearSelectedBtn
+             * @param {HTMLElement} mainCopyBtn
+             * @param {HTMLElement} searchInput
+             */
+            function clearSelections(selectionSet, fullList, outputContainer, copySelectedBtn, visitSelectedBtn, clearSelectedBtn, mainCopyBtn, searchInput) {
+                selectionSet.clear();
+                updateSelectionButtons(copySelectedBtn, visitSelectedBtn, clearSelectedBtn, 0, mainCopyBtn);
+                // Re-filter and re-render to uncheck all visible boxes
+                filterAndDisplay(searchInput.value, fullList, outputContainer, selectionSet);
+            }
+
+
+            // --- Event Listeners ---
+            compareButton.addEventListener('click', compareLists);
+            
+            // Main copy buttons
+            copyButton.addEventListener('click', copyResults);
+            copyFansButton.addEventListener('click', copyFans);
+            copyMutualsButton.addEventListener('click', copyMutuals);
+            
+            // "Copy Selected" button listeners
+            copySelectedButton.addEventListener('click', () => {
+                copyListToClipboard(Array.from(selectedNotFollowing), copySelectedButton, `Copy Selected (${selectedNotFollowing.size})`);
+            });
+            copySelectedFansButton.addEventListener('click', () => {
+                copyListToClipboard(Array.from(selectedFans), copySelectedFansButton, `Copy (${selectedFans.size})`);
+            });
+            copySelectedMutualsButton.addEventListener('click', () => {
+                copyListToClipboard(Array.from(selectedMutuals), copySelectedMutualsButton, `Copy (${selectedMutuals.size})`);
+            });
+
+            // NEW: "Visit Selected" button listeners
+            visitSelectedButton.addEventListener('click', () => {
+                visitSelected(selectedNotFollowing);
+            });
+            visitSelectedFansButton.addEventListener('click', () => {
+                visitSelected(selectedFans);
+            });
+            visitSelectedMutualsButton.addEventListener('click', () => {
+                visitSelected(selectedMutuals);
+            });
+            
+            // NEW: "Clear Selection" button listeners
+            clearSelectedButton.addEventListener('click', () => {
+                clearSelections(selectedNotFollowing, fullNotFollowingList, resultsOutputList,
+                                copySelectedButton, visitSelectedButton, clearSelectedButton, copyButton, searchNotFollowing);
+            });
+            clearSelectedFansButton.addEventListener('click', () => {
+                clearSelections(selectedFans, fullFansList, fansOutputList,
+                                copySelectedFansButton, visitSelectedFansButton, clearSelectedFansButton, copyFansButton, searchFans);
+            });
+            clearSelectedMutualsButton.addEventListener('click', () => {
+                clearSelections(selectedMutuals, fullMutualsList, mutualsOutputList,
+                                copySelectedMutualsButton, visitSelectedMutualsButton, clearSelectedMutualsButton, copyMutualsButton, searchMutuals);
+            });
+
+            // NEW: Modal event listeners
+            modalCancel.addEventListener('click', hideModal);
+            modalConfirm.addEventListener('click', () => {
+                if (modalConfirmCallback) {
+                    modalConfirmCallback();
+                }
+                hideModal();
+            });
+
+
+            showMoreButton.addEventListener('click', () => {
+                moreDetailsSection.classList.remove('hidden');
+                moreDetailsSection.classList.add('fade-in');
+                showMoreButton.classList.add('hidden'); // Hide the button after clicking
+            });
+
+            // File input listeners
+            followersFileInput.addEventListener('change', (e) => {
+                handleFileSelect(e, followersInput);
+            });
+            followingFileInput.addEventListener('change', (e) => {
+                handleFileSelect(e, followingInput);
+            });
+            
+            // NEW: Event delegation for checkbox clicks
+            resultsOutputList.addEventListener('click', (e) => {
+                handleCheckboxClick(e, selectedNotFollowing, 
+                                    copySelectedButton, visitSelectedButton, clearSelectedButton, copyButton);
+            });
+            fansOutputList.addEventListener('click', (e) => {
+                handleCheckboxClick(e, selectedFans, 
+                                    copySelectedFansButton, visitSelectedFansButton, clearSelectedFansButton, copyFansButton);
+            });
+            mutualsOutputList.addEventListener('click', (e) => {
+                handleCheckboxClick(e, selectedMutuals, 
+                                    copySelectedMutualsButton, visitSelectedMutualsButton, clearSelectedMutualsButton, copyMutualsButton);
+            });
+
+            
+            // UPDATED: Search filter event listeners
+            searchNotFollowing.addEventListener('input', (e) => {
+                filterAndDisplay(e.target.value, fullNotFollowingList, resultsOutputList, selectedNotFollowing);
+            });
+            
+            searchFans.addEventListener('input', (e) => {
+                filterAndDisplay(e.target.value, fullFansList, fansOutputList, selectedFans); // <-- Fixed typo here
+            });
+            
+            searchMutuals.addEventListener('input', (e) => {
+                filterAndDisplay(e.target.value, fullMutualsList, mutualsOutputList, selectedMutuals);
+            });
+        });
+    </script>
+
+</body>
+</html>
+
+
