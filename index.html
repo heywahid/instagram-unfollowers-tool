@@ -189,11 +189,19 @@
                     Followers List
                     <span id="followersCount" class="text-sm font-normal text-gray-500 ml-2"></span>
                 </label>
-                <textarea 
-                    id="followersInput"
-                    class="w-full h-80 p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm resize-y"
-                    placeholder="Paste your 'followers' list here. The app will find the usernames."
-                ></textarea>
+<textarea 
+    id="followersInput"
+    class="w-full h-80 p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm resize-y"
+    placeholder="Paste your 'followers' list here. The app will find the usernames."
+></textarea>
+<div id="followersRenderedList" class="hidden w-full h-80 p-2 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto" aria-live="polite"></div>
+<div id="followersActionBar" class="hidden mt-2 flex flex-wrap gap-2">
+    <button id="editFollowersButton" class="bg-gray-200 text-gray-700 font-semibold py-1 px-3 rounded-lg text-xs hover:bg-gray-300">✏️ Edit</button>
+    <button id="visitSelectedFollowersButton" class="hidden bg-blue-500 text-white font-semibold py-1 px-3 rounded-lg text-xs hover:bg-blue-600">Visit</button>
+    <button id="copySelectedFollowersButton" class="hidden bg-yellow-500 text-white font-semibold py-1 px-3 rounded-lg text-xs hover:bg-yellow-600">Copy (0)</button>
+    <button id="clearSelectedFollowersButton" class="hidden bg-gray-400 text-white font-semibold py-1 px-3 rounded-lg text-xs hover:bg-gray-500">Clear</button>
+    <button id="copyFollowersListButton" class="bg-green-600 text-white font-semibold py-1 px-3 rounded-lg text-xs hover:bg-green-700 ml-auto">Copy List</button>
+</div>
                 <!-- File Upload for Followers -->
                 <label class="block w-full mt-3 text-sm font-medium text-gray-700">
                     Or upload CSV:
@@ -208,20 +216,6 @@
                                file:bg-blue-50 file:text-blue-700
                                hover:file:bg-blue-100 transition-colors"
                     />
-                    <!-- Followers Rendered List -->
-<div id="followersListContainer" class="hidden mt-3">
-  <div class="flex justify-between items-center mb-1">
-    <span class="text-sm font-medium text-gray-600">Parsed Usernames:</span>
-    <div class="flex space-x-2">
-      <button id="visitSelectedFollowersButton" class="hidden bg-blue-500 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-blue-600 text-xs">Visit</button>
-      <button id="copySelectedFollowersButton" class="hidden bg-yellow-500 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-yellow-600 text-xs">Copy (0)</button>
-      <button id="clearSelectedFollowersButton" class="hidden bg-gray-400 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-gray-500 text-xs">Clear</button>
-      <button id="copyFollowersListButton" class="bg-green-600 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-green-700 text-xs">Copy List</button>
-    </div>
-  </div>
-  <div id="followersRenderedList" class="w-full h-48 p-2 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto" aria-live="polite"></div>
-</div>
-
                 </label>
             </div>
             
@@ -231,11 +225,19 @@
                     Following List
                     <span id="followingCount" class="text-sm font-normal text-gray-500 ml-2"></span>
                 </label>
-                <textarea 
-                    id="followingInput"
-                    class="w-full h-80 p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm resize-y"
-                    placeholder="Paste your 'following' list here. The app will find the usernames."
-                ></textarea>
+<textarea 
+    id="followingInput"
+    class="w-full h-80 p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm resize-y"
+    placeholder="Paste your 'following' list here. The app will find the usernames."
+></textarea>
+<div id="followingRenderedList" class="hidden w-full h-80 p-2 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto" aria-live="polite"></div>
+<div id="followingActionBar" class="hidden mt-2 flex flex-wrap gap-2">
+    <button id="editFollowingButton" class="bg-gray-200 text-gray-700 font-semibold py-1 px-3 rounded-lg text-xs hover:bg-gray-300">✏️ Edit</button>
+    <button id="visitSelectedFollowingButton" class="hidden bg-indigo-500 text-white font-semibold py-1 px-3 rounded-lg text-xs hover:bg-indigo-600">Visit</button>
+    <button id="copySelectedFollowingButton" class="hidden bg-yellow-500 text-white font-semibold py-1 px-3 rounded-lg text-xs hover:bg-yellow-600">Copy (0)</button>
+    <button id="clearSelectedFollowingButton" class="hidden bg-gray-400 text-white font-semibold py-1 px-3 rounded-lg text-xs hover:bg-gray-500">Clear</button>
+    <button id="copyFollowingListButton" class="bg-green-600 text-white font-semibold py-1 px-3 rounded-lg text-xs hover:bg-green-700 ml-auto">Copy List</button>
+</div>
                 <!-- File Upload for Following -->
                 <label class="block w-full mt-3 text-sm font-medium text-gray-700">
                     Or upload CSV:
@@ -250,19 +252,6 @@
                                file:bg-indigo-50 file:text-indigo-700
                                hover:file:bg-indigo-100 transition-colors"
                     />
-                    <!-- Following Rendered List -->
-<div id="followingListContainer" class="hidden mt-3">
-  <div class="flex justify-between items-center mb-1">
-    <span class="text-sm font-medium text-gray-600">Parsed Usernames:</span>
-    <div class="flex space-x-2">
-      <button id="visitSelectedFollowingButton" class="hidden bg-indigo-500 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-indigo-600 text-xs">Visit</button>
-      <button id="copySelectedFollowingButton" class="hidden bg-yellow-500 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-yellow-600 text-xs">Copy (0)</button>
-      <button id="clearSelectedFollowingButton" class="hidden bg-gray-400 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-gray-500 text-xs">Clear</button>
-      <button id="copyFollowingListButton" class="bg-green-600 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-green-700 text-xs">Copy List</button>
-    </div>
-  </div>
-  <div id="followingRenderedList" class="w-full h-48 p-2 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto" aria-live="polite"></div>
-</div>
                 </label>
             </div>
         </div>
@@ -566,14 +555,16 @@ let selectedFollowing = new Set();
             const compareButton = document.getElementById('compareButton');
             const resultsSection = document.getElementById('resultsSection');
             const resultCount = document.getElementById('resultCount');
-const followersListContainer = document.getElementById('followersListContainer');
-const followingListContainer = document.getElementById('followingListContainer');
 const followersRenderedList = document.getElementById('followersRenderedList');
-const followingRenderedList = document.getElementById('followingRenderedList');
+const followersActionBar = document.getElementById('followersActionBar');
+const editFollowersButton = document.getElementById('editFollowersButton');
 const visitSelectedFollowersButton = document.getElementById('visitSelectedFollowersButton');
 const copySelectedFollowersButton = document.getElementById('copySelectedFollowersButton');
 const clearSelectedFollowersButton = document.getElementById('clearSelectedFollowersButton');
 const copyFollowersListButton = document.getElementById('copyFollowersListButton');
+const followingRenderedList = document.getElementById('followingRenderedList');
+const followingActionBar = document.getElementById('followingActionBar');
+const editFollowingButton = document.getElementById('editFollowingButton');
 const visitSelectedFollowingButton = document.getElementById('visitSelectedFollowingButton');
 const copySelectedFollowingButton = document.getElementById('copySelectedFollowingButton');
 const clearSelectedFollowingButton = document.getElementById('clearSelectedFollowingButton');
@@ -1047,26 +1038,41 @@ const copyFollowingListButton = document.getElementById('copyFollowingListButton
                 filterAndDisplay(searchInput.value, fullList, outputContainer, selectionSet);
             }
 
-function renderInputList(text, container, wrapper, fullListRef, selectionSet, copySelBtn, visitSelBtn, clearSelBtn, copyAllBtn) {
+function renderInputList(text, textarea, container, actionBar, fullListRef, selectionSet, copySelBtn, visitSelBtn, clearSelBtn, copyAllBtn) {
     const parsed = [...parseInput(text)].sort();
     fullListRef.length = 0;
     parsed.forEach(u => fullListRef.push(u));
-    if (parsed.length === 0) { wrapper.classList.add('hidden'); return; }
+
+    if (parsed.length === 0) {
+        textarea.classList.remove('hidden');
+        container.classList.add('hidden');
+        actionBar.classList.add('hidden');
+        return;
+    }
+
     selectionSet.clear();
     updateSelectionButtons(copySelBtn, visitSelBtn, clearSelBtn, 0, copyAllBtn);
-    wrapper.classList.remove('hidden');
+    textarea.classList.add('hidden');
+    container.classList.remove('hidden');
+    actionBar.classList.remove('hidden');
     renderList(parsed, container, selectionSet);
 }
+
 function debounce(fn, delay) {
     let timer;
     return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); };
 }
 followersInput.addEventListener('input', debounce(() => {
-    renderInputList(followersInput.value, followersRenderedList, followersListContainer, fullFollowersList, selectedFollowers, copySelectedFollowersButton, visitSelectedFollowersButton, clearSelectedFollowersButton, copyFollowersListButton);
+    renderInputList(followersInput.value, followersInput, followersRenderedList, followersActionBar, fullFollowersList, selectedFollowers, copySelectedFollowersButton, visitSelectedFollowersButton, clearSelectedFollowersButton, copyFollowersListButton);
 }, 400));
 followingInput.addEventListener('input', debounce(() => {
-    renderInputList(followingInput.value, followingRenderedList, followingListContainer, fullFollowingList, selectedFollowing, copySelectedFollowingButton, visitSelectedFollowingButton, clearSelectedFollowingButton, copyFollowingListButton);
+    renderInputList(followingInput.value, followingInput, followingRenderedList, followingActionBar, fullFollowingList, selectedFollowing, copySelectedFollowingButton, visitSelectedFollowingButton, clearSelectedFollowingButton, copyFollowingListButton);
 }, 400));
+
+editFollowersButton.addEventListener('click', () => { followersInput.classList.remove('hidden'); followersRenderedList.classList.add('hidden'); followersActionBar.classList.add('hidden'); });
+editFollowingButton.addEventListener('click', () => { followingInput.classList.remove('hidden'); followingRenderedList.classList.add('hidden'); followingActionBar.classList.add('hidden'); });
+
+            
 followersRenderedList.addEventListener('change', (e) => {
     if (e.target.type === 'checkbox') handleCheckboxClick(e, selectedFollowers, copySelectedFollowersButton, visitSelectedFollowersButton, clearSelectedFollowersButton, copyFollowersListButton);
 });
