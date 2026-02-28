@@ -208,6 +208,20 @@
                                file:bg-blue-50 file:text-blue-700
                                hover:file:bg-blue-100 transition-colors"
                     />
+                    <!-- Followers Rendered List -->
+<div id="followersListContainer" class="hidden mt-3">
+  <div class="flex justify-between items-center mb-1">
+    <span class="text-sm font-medium text-gray-600">Parsed Usernames:</span>
+    <div class="flex space-x-2">
+      <button id="visitSelectedFollowersButton" class="hidden bg-blue-500 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-blue-600 text-xs">Visit</button>
+      <button id="copySelectedFollowersButton" class="hidden bg-yellow-500 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-yellow-600 text-xs">Copy (0)</button>
+      <button id="clearSelectedFollowersButton" class="hidden bg-gray-400 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-gray-500 text-xs">Clear</button>
+      <button id="copyFollowersListButton" class="bg-green-600 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-green-700 text-xs">Copy List</button>
+    </div>
+  </div>
+  <div id="followersRenderedList" class="w-full h-48 p-2 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto" aria-live="polite"></div>
+</div>
+
                 </label>
             </div>
             
@@ -236,6 +250,19 @@
                                file:bg-indigo-50 file:text-indigo-700
                                hover:file:bg-indigo-100 transition-colors"
                     />
+                    <!-- Following Rendered List -->
+<div id="followingListContainer" class="hidden mt-3">
+  <div class="flex justify-between items-center mb-1">
+    <span class="text-sm font-medium text-gray-600">Parsed Usernames:</span>
+    <div class="flex space-x-2">
+      <button id="visitSelectedFollowingButton" class="hidden bg-indigo-500 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-indigo-600 text-xs">Visit</button>
+      <button id="copySelectedFollowingButton" class="hidden bg-yellow-500 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-yellow-600 text-xs">Copy (0)</button>
+      <button id="clearSelectedFollowingButton" class="hidden bg-gray-400 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-gray-500 text-xs">Clear</button>
+      <button id="copyFollowingListButton" class="bg-green-600 text-white font-semibold py-1 px-3 rounded-lg shadow-sm hover:bg-green-700 text-xs">Copy List</button>
+    </div>
+  </div>
+  <div id="followingRenderedList" class="w-full h-48 p-2 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto" aria-live="polite"></div>
+</div>
                 </label>
             </div>
         </div>
@@ -515,6 +542,11 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+let fullFollowersList = [];
+let fullFollowingList = [];
+let selectedFollowers = new Set();
+let selectedFollowing = new Set();
+
             // --- Store full lists for filtering ---
             let fullNotFollowingList = [];
             let fullFansList = [];
@@ -534,6 +566,18 @@
             const compareButton = document.getElementById('compareButton');
             const resultsSection = document.getElementById('resultsSection');
             const resultCount = document.getElementById('resultCount');
+const followersListContainer = document.getElementById('followersListContainer');
+const followingListContainer = document.getElementById('followingListContainer');
+const followersRenderedList = document.getElementById('followersRenderedList');
+const followingRenderedList = document.getElementById('followingRenderedList');
+const visitSelectedFollowersButton = document.getElementById('visitSelectedFollowersButton');
+const copySelectedFollowersButton = document.getElementById('copySelectedFollowersButton');
+const clearSelectedFollowersButton = document.getElementById('clearSelectedFollowersButton');
+const copyFollowersListButton = document.getElementById('copyFollowersListButton');
+const visitSelectedFollowingButton = document.getElementById('visitSelectedFollowingButton');
+const copySelectedFollowingButton = document.getElementById('copySelectedFollowingButton');
+const clearSelectedFollowingButton = document.getElementById('clearSelectedFollowingButton');
+const copyFollowingListButton = document.getElementById('copyFollowingListButton');
             const followersCount = document.getElementById('followersCount');
             const followingCount = document.getElementById('followingCount');
             const copyButton = document.getElementById('copyButton');
@@ -643,6 +687,7 @@
                         }
                     }
                     targetTextarea.value = usernames.join('\n');
+                    targetTextarea.dispatchEvent(new Event('input'));
                 };
                 reader.readAsText(file);
             }
@@ -1002,6 +1047,40 @@
                 filterAndDisplay(searchInput.value, fullList, outputContainer, selectionSet);
             }
 
+function renderInputList(text, container, wrapper, fullListRef, selectionSet, copySelBtn, visitSelBtn, clearSelBtn, copyAllBtn) {
+    const parsed = [...parseInput(text)].sort();
+    fullListRef.length = 0;
+    parsed.forEach(u => fullListRef.push(u));
+    if (parsed.length === 0) { wrapper.classList.add('hidden'); return; }
+    selectionSet.clear();
+    updateSelectionButtons(copySelBtn, visitSelBtn, clearSelBtn, 0, copyAllBtn);
+    wrapper.classList.remove('hidden');
+    renderList(parsed, container, selectionSet);
+}
+function debounce(fn, delay) {
+    let timer;
+    return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); };
+}
+followersInput.addEventListener('input', debounce(() => {
+    renderInputList(followersInput.value, followersRenderedList, followersListContainer, fullFollowersList, selectedFollowers, copySelectedFollowersButton, visitSelectedFollowersButton, clearSelectedFollowersButton, copyFollowersListButton);
+}, 400));
+followingInput.addEventListener('input', debounce(() => {
+    renderInputList(followingInput.value, followingRenderedList, followingListContainer, fullFollowingList, selectedFollowing, copySelectedFollowingButton, visitSelectedFollowingButton, clearSelectedFollowingButton, copyFollowingListButton);
+}, 400));
+followersRenderedList.addEventListener('change', (e) => {
+    if (e.target.type === 'checkbox') handleCheckboxClick(e, selectedFollowers, copySelectedFollowersButton, visitSelectedFollowersButton, clearSelectedFollowersButton, copyFollowersListButton);
+});
+followingRenderedList.addEventListener('change', (e) => {
+    if (e.target.type === 'checkbox') handleCheckboxClick(e, selectedFollowing, copySelectedFollowingButton, visitSelectedFollowingButton, clearSelectedFollowingButton, copyFollowingListButton);
+});
+copyFollowersListButton.addEventListener('click', () => copyListToClipboard(fullFollowersList, copyFollowersListButton, 'Copy List'));
+copySelectedFollowersButton.addEventListener('click', () => copyListToClipboard([...selectedFollowers].sort(), copySelectedFollowersButton, 'Copy (0)'));
+visitSelectedFollowersButton.addEventListener('click', () => visitSelected(selectedFollowers));
+clearSelectedFollowersButton.addEventListener('click', () => clearSelections(selectedFollowers, followersRenderedList, fullFollowersList, copySelectedFollowersButton, visitSelectedFollowersButton, clearSelectedFollowersButton, copyFollowersListButton));
+copyFollowingListButton.addEventListener('click', () => copyListToClipboard(fullFollowingList, copyFollowingListButton, 'Copy List'));
+copySelectedFollowingButton.addEventListener('click', () => copyListToClipboard([...selectedFollowing].sort(), copySelectedFollowingButton, 'Copy (0)'));
+visitSelectedFollowingButton.addEventListener('click', () => visitSelected(selectedFollowing));
+clearSelectedFollowingButton.addEventListener('click', () => clearSelections(selectedFollowing, followingRenderedList, fullFollowingList, copySelectedFollowingButton, visitSelectedFollowingButton, clearSelectedFollowingButton, copyFollowingListButton));
 
             // --- Event Listeners ---
             compareButton.addEventListener('click', compareLists);
