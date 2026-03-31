@@ -1039,23 +1039,22 @@ const copyFollowingListButton = document.getElementById('copyFollowingListButton
             }
 
 function renderInputList(text, textarea, container, actionBar, fullListRef, selectionSet, copySelBtn, visitSelBtn, clearSelBtn, copyAllBtn) {
-    const parsed = [...parseInput(text)].sort();
-    fullListRef.length = 0;
-    parsed.forEach(u => fullListRef.push(u));
+    const parsed = [...parseInput(text)] // ← removed .sort(); here
+    fullListRef.length = 0
+    parsed.forEach(u => fullListRef.push(u))
 
     if (parsed.length === 0) {
-        textarea.classList.remove('hidden');
-        container.classList.add('hidden');
-        actionBar.classList.add('hidden');
-        return;
+        textarea.classList.remove('hidden')
+        container.classList.add('hidden')
+        actionBar.classList.add('hidden')
+        return
     }
-
-    selectionSet.clear();
-    updateSelectionButtons(copySelBtn, visitSelBtn, clearSelBtn, 0, copyAllBtn);
-    textarea.classList.add('hidden');
-    container.classList.remove('hidden');
-    actionBar.classList.remove('hidden');
-    renderList(parsed, container, selectionSet);
+    selectionSet.clear()
+    updateSelectionButtons(copySelBtn, visitSelBtn, clearSelBtn, 0, copyAllBtn)
+    textarea.classList.add('hidden')
+    container.classList.remove('hidden')
+    actionBar.classList.remove('hidden')
+    renderList(parsed, container, selectionSet)
 }
 
 function debounce(fn, delay) {
